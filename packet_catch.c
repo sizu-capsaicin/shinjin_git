@@ -74,7 +74,7 @@ int main(void)
 			printf("packet start");
 			for (int i = 0; i < size; i++) {
 				if (!(i % 16)) {
-					printf("\n0x%06x: ", line);
+					printf("\n0x%03x0: ", line);
 					line++;
 				}
 				printf("%02x", buf[i]);
