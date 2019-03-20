@@ -77,7 +77,7 @@ int main(void)
 					printf("\n0x%03x0: ", line);
 					line++;
 				}
-				printf("%02x", buf[i]);
+				printf("%02x", (unsigned char) buf[i]);
 				if (i % 2)
 					printf(" ");
 			}
