@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 
 	int dscr;	// use descripter
 
-	if ((dscr = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+	if ((dscr = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
 		perror("socket error\n");
 		exit(1);
 	}
@@ -29,13 +29,9 @@ int main(int argc, char *argv[])
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = inet_addr(argv[1]);
 	addr.sin_port = atoi(argv[2]);
-
-	if (connect(dscr, (struct sockaddr *) &addr, sizeof(struct sockaddr_in)) < 0) {
-		perror("connect error\n");
-		exit(1);
-	}
-
 	char buf[BUF];		//receive input and send it
+	int addr_len = sizeof(addr);
+
 	//initiation
 	for (int i = 0; i < BUF; i++)
 		buf[i] = '\0';
@@ -49,7 +45,7 @@ int main(int argc, char *argv[])
 			int size = strlen(buf);
 			buf[size - 1] = '\0';
 
-			if (send(dscr, buf, BUF, 0) < 0) {		// send data
+			if (sendto(dscr, buf, BUF, 0, (struct sockaddr *) &addr, (socklen_t) addr_len) < 0) {		// send data
 				perror("send error\n");
 				exit(1);
 			}
@@ -58,7 +54,7 @@ int main(int argc, char *argv[])
 				break;
 			}
 
-			if ((size = recv(dscr, buf, BUF, 0)) < 0) {
+			if ((size = recvfrom(dscr, buf, BUF, 0, (struct sockaddr *) &addr, (socklen_t *) &addr_len)) < 0) {
 				perror("recv error\n");
 				exit(1);
 			} else {
