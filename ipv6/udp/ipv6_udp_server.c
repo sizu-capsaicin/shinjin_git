@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
 	while (1) {			// execute forever
 		int size;		// size of data
 
-		if ((size = recvfrom(desc, buf, BUF, 0, (struct sockaddr *) client.ai_addr, &client.ai_addrlen)) < 0) {
+		if ((size = recvfrom(desc, buf, BUF, 0, (struct sockaddr *) &client, &client.ai_addrlen)) < 0) {
 			perror("recv error\n");
 			exit(1);
 		}
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 		if (!strncmp(buf, "exit\0", BUF)) {
 			break;
 		} else {
-			if (sendto(desc, buf, BUF, 0, (struct sockaddr *) client.ai_addr, client.ai_addrlen) < 0) {
+			if (sendto(desc, buf, BUF, 0, (struct sockaddr *) &client, client.ai_addrlen) < 0) {
 				perror("send error\n");
 				exit(1);
 			}
