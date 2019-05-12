@@ -28,7 +28,9 @@ int main(int argc, char *argv[])
   else 
     domain = AF_INET;
 
-	struct addrinfo server, client, *res;	// use sockaddr
+	struct addrinfo server, *res;	// use sockaddr
+	struct sockaddr_storage client;	// use to send to client
+	socklen_t client_len;
 	memset(&server, 0, sizeof(server));
 	memset(&client, 0, sizeof(client));
 	server.ai_family = domain;
@@ -54,7 +56,7 @@ int main(int argc, char *argv[])
 
   printf("ip version: IPv%s\n", argv[1]);
 
-	client.ai_addrlen = sizeof(client.ai_addr);
+	client_len = sizeof(struct sockaddr_storage);
 	char buf[BUF];			// receive the data
 
 	// initiation
@@ -64,13 +66,13 @@ int main(int argc, char *argv[])
 	while (1) {			// execute forever
 		int size;		// size of data
 
-		if ((size = recvfrom(desc, buf, BUF, 0, (struct sockaddr *) &client, (socklen_t *) &client.ai_addrlen)) < 0) {
+		if ((size = recvfrom(desc, buf, BUF, 0, (struct sockaddr *) &client, (socklen_t *) &client_len)) < 0) {
 			perror("recv error\n");
 			exit(1);
 		}
 
 		char host[BUF];
-		getnameinfo((struct sockaddr *) &client, (socklen_t) client.ai_addrlen, host, sizeof(host), NULL, 0, BUF);
+		getnameinfo((struct sockaddr *) &client, (socklen_t) client_len, host, sizeof(host), NULL, 0, BUF);
 		printf("client IP address: %s\n", host);
 
 		buf[size - 1] = '\0';
@@ -79,7 +81,7 @@ int main(int argc, char *argv[])
 		if (!strncmp(buf, "exit\0", BUF)) {
 			break;
 		} else {
-			if (sendto(desc, buf, BUF, 0, (struct sockaddr *) &client, (socklen_t) client.ai_addrlen) < 0) {
+			if (sendto(desc, buf, BUF, 0, (struct sockaddr *) &client, (socklen_t) client_len) < 0) {
 				perror("send error\n");
 				exit(1);
 			}
