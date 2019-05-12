@@ -64,10 +64,14 @@ int main(int argc, char *argv[])
 	while (1) {			// execute forever
 		int size;		// size of data
 
-		if ((size = recvfrom(desc, buf, BUF, 0, (struct sockaddr *) &client, &client.ai_addrlen)) < 0) {
+		if ((size = recvfrom(desc, buf, BUF, 0, (struct sockaddr *) &client, (socklen_t *) &client.ai_addrlen)) < 0) {
 			perror("recv error\n");
 			exit(1);
 		}
+
+		char host[BUF];
+		getnameinfo((struct sockaddr *) &client, (socklen_t) client.ai_addrlen, host, sizeof(host), NULL, 0, BUF);
+		printf("client IP address: %s\n", host);
 
 		buf[size - 1] = '\0';
 		// print the data
@@ -75,7 +79,7 @@ int main(int argc, char *argv[])
 		if (!strncmp(buf, "exit\0", BUF)) {
 			break;
 		} else {
-			if (sendto(desc, buf, BUF, 0, (struct sockaddr *) &client, client.ai_addrlen) < 0) {
+			if (sendto(desc, buf, BUF, 0, (struct sockaddr *) &client, (socklen_t) client.ai_addrlen) < 0) {
 				perror("send error\n");
 				exit(1);
 			}
