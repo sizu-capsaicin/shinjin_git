@@ -24,10 +24,12 @@ int main(int argc, char *argv[])
 
   memset(&addr, 0, sizeof(addr));
 	addr.ai_family = AF_UNSPEC;
-  addr.ai_socktype = AF_INET6;
+  addr.ai_socktype = SOCK_DGRAM;
 
-  if ((getaddrinfo(argv[1], argv[2], &addr, &res)) != 0) {
-    perror("addrinfo error\n");
+  int err = 0;
+  err = getaddrinfo(argv[1], argv[2], &addr, &res);
+  if (err != 0) {
+    printf("getaddrinfo error: %s\n", gai_strerror(err));
     exit(1);
   }
 
