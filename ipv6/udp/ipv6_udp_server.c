@@ -71,9 +71,9 @@ int main(int argc, char *argv[])
 			exit(1);
 		}
 
-		char host[BUF];
-		getnameinfo((struct sockaddr *) &client, (socklen_t) client_len, host, sizeof(host), NULL, 0, BUF);
-		printf("client IP address: %s\n", host);
+		char host[NI_MAXHOST], service[NI_MAXSERV];
+		getnameinfo((struct sockaddr *) &client, (socklen_t) client_len, host, NI_MAXHOST, service, NI_MAXSERV, NI_NUMERICSERV);
+		printf("client IP address: %s:%s\n", host, service);
 
 		buf[size - 1] = '\0';
 		// print the data
