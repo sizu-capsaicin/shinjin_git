@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
   else 
     domain = AF_INET;
 
-	struct addrinfo server, *client, *res;	// use sockaddr
+	struct addrinfo server, client, *res;	// use sockaddr
 	memset(&server, 0, sizeof(server));
 	server.ai_family = domain;
 	server.ai_socktype = SOCK_DGRAM;
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 	while (1) {			// execute forever
 		int size;		// size of data
 
-		if ((size = recvfrom(desc, buf, BUF, 0, client->ai_addr, (socklen_t *) &client->ai_addrlen)) < 0) {
+		if ((size = recvfrom(desc, buf, BUF, 0, client.ai_addr, &client.ai_addrlen)) < 0) {
 			perror("recv error\n");
 			exit(1);
 		}
@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
 		if (!strncmp(buf, "exit\0", BUF)) {
 			break;
 		} else {
-			if (sendto(desc, buf, BUF, 0, client->ai_addr, client->ai_addrlen) < 0) {
+			if (sendto(desc, buf, BUF, 0, client.ai_addr, client.ai_addrlen) < 0) {
 				perror("send error\n");
 				exit(1);
 			}
