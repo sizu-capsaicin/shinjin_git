@@ -29,12 +29,15 @@ int main(int argc, char *argv[])
     domain = AF_INET;
 
 	struct addrinfo server, *client, *res;	// use sockaddr
+	memset(&server, 0, sizeof(server));
 	server.ai_family = domain;
 	server.ai_socktype = SOCK_DGRAM;
   server.ai_flags = AI_PASSIVE;
 
-  if ((getaddrinfo(NULL, argv[2], &server, &res)) != 0) {
-    perror("addrinfo error\n");
+  int err = 0;
+  err = getaddrinfo(NULL, argv[2], &server, &res);
+  if (err != 0) {
+	  printf("getaddrinfo error: %s\n", gai_strerror(err));
     exit(1);
   }
 
@@ -48,7 +51,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-  printf("ip version: IPv%s", argv[1]);
+  printf("ip version: IPv%s\n", argv[1]);
 
 	int client_len = sizeof(client);
 	char buf[BUF];			// receive the data
