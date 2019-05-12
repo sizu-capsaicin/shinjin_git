@@ -15,27 +15,40 @@
 
 int main(int argc, char *argv[])
 {
-	if (argc != 2) {
-		printf("Useage: ./<exec filename> <port number of server>\n");
+	if (argc != 3) {
+		printf("Useage: ./<exec filename> <ip version number> <port number of server>\n");
 		exit(1);
 	}
 
 	int desc;	// use descripter
+  int domain; // house domain
 
-	if ((desc = socket(AF_INET6, SOCK_DGRAM, 0)) < 0) {
+  if (!(strncmp("6", argv[1], sizeof("6"))))
+    domain = AF_INET6;
+  else 
+    domain = AF_INET;
+
+	struct addrinfo server, client, *res;	// use sockaddr
+	server.ai_family = domain;
+	server.ai_socktype = SOCK_DGRAM;
+  server.ai_flags = AI_PASSIVE;
+
+  if ((getaddrinfo(NULL, argv[2], &server, &res)) != 0) {
+    perror("addrinfo error\n");
+    exit(1);
+  }
+
+	if ((desc = socket(res->ai_family, res->ai_socktype, 0)) < 0) {
 		perror("socket error\n");
 		exit(1);
 	}
-
-	struct sockaddr_in server, client;	// use sockaddr
-	server.sin_family = AF_INET6;
-	server.sin_addr.s_addr = INADDR_ANY;
-	server.sin_port = atoi(argv[1]);
 
 	if ((bind(desc, (struct sockaddr *) &server, sizeof(struct sockaddr_in))) < 0) {
 		perror("bind error\n");
 		exit(1);
 	}
+
+  printf("ip version: IPv%s", argv[1]);
 
 	int client_len = sizeof(client);
 	char buf[BUF];			// receive the data

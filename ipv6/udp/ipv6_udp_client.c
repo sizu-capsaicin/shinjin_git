@@ -8,6 +8,7 @@
 #include <sys/un.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netdb.h>
 
 #define BUF 256					// define buffer size
 
@@ -19,22 +20,27 @@ int main(int argc, char *argv[])
 	}
 
 	int dscr;	// use descripter
+	struct addrinfo addr, *res;	// use sockaddr
 
-	if ((dscr = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+  memset(&addr, 0, sizeof(addr));
+	addr.ai_family = AF_UNSPEC;
+  addr.ai_socktype = AF_INET6;
+
+  if ((getaddrinfo(argv[1], argv[2], &addr, &res)) != 0) {
+    perror("addrinfo error\n");
+    exit(1);
+  }
+
+	if ((dscr = socket(res->ai_family, res->ai_socktype, 0)) < 0) {
 		perror("socket error\n");
 		exit(1);
 	}
 
-	struct sockaddr_in addr;	// use sockaddr
-	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = inet_addr(argv[1]);
-	addr.sin_port = atoi(argv[2]);
 	char buf[BUF];		//receive input and send it
 	int addr_len = sizeof(addr);
 
 	//initiation
-	for (int i = 0; i < BUF; i++)
-		buf[i] = '\0';
+  memset(buf, 0, BUF);
 
 	while (1) {
 		printf("> ");
@@ -45,7 +51,21 @@ int main(int argc, char *argv[])
 			int size = strlen(buf);
 			buf[size - 1] = '\0';
 
-			if (sendto(dscr, buf, BUF, 0, (struct sockaddr *) &addr, (socklen_t) addr_len) < 0) {		// send data
+      const char *ipver;
+      switch (res->ai_family) {
+        case AF_INET:
+          ipver = "IPv4";
+          break;
+        case AF_INET6:
+          ipver = "IPv6";
+          break;
+        default:
+          ipver = "unknown";
+          break;
+      }
+      printf("IP version: %s\n", ipver);
+
+			if (sendto(dscr, buf, BUF, 0, res->ai_addr, res->ai_addrlen) < 0) {		// send data
 				perror("send error\n");
 				exit(1);
 			}
@@ -54,7 +74,7 @@ int main(int argc, char *argv[])
 				break;
 			}
 
-			if ((size = recvfrom(dscr, buf, BUF, 0, (struct sockaddr *) &addr, (socklen_t *) &addr_len)) < 0) {
+			if ((size = recvfrom(dscr, buf, BUF, 0, res->ai_addr, &res->ai_addrlen)) < 0) {
 				perror("recv error\n");
 				exit(1);
 			} else {
