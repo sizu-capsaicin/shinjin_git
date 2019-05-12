@@ -30,6 +30,7 @@ int main(int argc, char *argv[])
 
 	struct addrinfo server, client, *res;	// use sockaddr
 	memset(&server, 0, sizeof(server));
+	memset(&client, 0, sizeof(client));
 	server.ai_family = domain;
 	server.ai_socktype = SOCK_DGRAM;
   server.ai_flags = AI_PASSIVE;
@@ -53,7 +54,7 @@ int main(int argc, char *argv[])
 
   printf("ip version: IPv%s\n", argv[1]);
 
-	int client_len = sizeof(client);
+	client.ai_addrlen = sizeof(client.ai_addr);
 	char buf[BUF];			// receive the data
 
 	// initiation
@@ -63,7 +64,7 @@ int main(int argc, char *argv[])
 	while (1) {			// execute forever
 		int size;		// size of data
 
-		if ((size = recvfrom(desc, buf, BUF, 0, client.ai_addr, &client.ai_addrlen)) < 0) {
+		if ((size = recvfrom(desc, buf, BUF, 0, (struct sockaddr *) client.ai_addr, &client.ai_addrlen)) < 0) {
 			perror("recv error\n");
 			exit(1);
 		}
@@ -74,7 +75,7 @@ int main(int argc, char *argv[])
 		if (!strncmp(buf, "exit\0", BUF)) {
 			break;
 		} else {
-			if (sendto(desc, buf, BUF, 0, client.ai_addr, client.ai_addrlen) < 0) {
+			if (sendto(desc, buf, BUF, 0, (struct sockaddr *) client.ai_addr, client.ai_addrlen) < 0) {
 				perror("send error\n");
 				exit(1);
 			}
